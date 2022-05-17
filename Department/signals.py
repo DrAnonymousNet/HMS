@@ -10,10 +10,9 @@ def create_bed_receiver(sender, **kwargs):
         max_bed_num = kwargs["instance"].max_bed_num
         name = kwargs["instance"].name
         beds = Bed.objects.bulk_create(
-            [Bed(name = f"{name}-{i}", room = kwargs["instance"]) for i in range(max_bed_num)]
+            [Bed(name = f"{name}-B{i}", room = kwargs["instance"]) for i in range(1, max_bed_num)]
         )
-        for bed in beds:
-            bed.save()
+
     print(kwargs["instance"].max_bed_num, kwargs["created"])
 
 

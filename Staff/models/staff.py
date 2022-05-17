@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from datetime import time, timedelta
 from Department.models.department import Department
@@ -23,10 +25,16 @@ class Staff(models.Model):
 
 class Doctor(Staff):
     qualification = models.OneToOneField("Qualification", on_delete=models.CASCADE)
-    available_time = models.TimeField()
-    subordinate = models.ForeignKey('Doctor', on_delete=models.CASCADE)
+    available_time = models.TimeField(blank=True)
+    subordinate = models.ForeignKey('Doctor', on_delete=models.CASCADE, blank= True, null=True)
 
-
+    def clean(self):
+        if self.duty_shift == "Morning":
+            self.available_time = datetime.time(hour = 13)
+        elif self.duty_shift == "Afternoon":
+            self.available_time = datetime.time(20)
+    def __str__(self):
+        return self.profile.first_name
 class Nurse(Staff):
     pass
 

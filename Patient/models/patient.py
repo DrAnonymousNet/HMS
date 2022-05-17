@@ -19,9 +19,9 @@ class Patient(models.Model):
     next_of_kin_contact = models.CharField(max_length=20)
     admitted = models.BooleanField()
 
-    def clean(self):
-        if self.admitted:
-            admission = Admission.objects.get(for_patient = self, date_of_discharge__isnull = True)
+    #def clean(self):
+        #if self.admitted:
+         #   admission = Admission.objects.get(for_patient = self, date_of_discharge__isnull = True)
 
     def __str__(self):
         return self.get_full_name()
@@ -61,6 +61,8 @@ class Admission(models.Model):
         unique_together = ["for_patient", "date_of_admission"]
 
     def clean(self):
+        if self.for_patient.admitted and not self.date_of_discharged:
+            raise ValidationError("This Patient is Admitted Already")
         if self.admission_status == "Discharge" and not self.date_of_discharged:
             raise ValidationError("A discharged admission  profile status must have a discharge date")
 
@@ -68,13 +70,18 @@ class Admission(models.Model):
             raise ValidationError("An active admission status cannot have a discharge date")
         elif self.admission_status == "Active" and not self.bed_number:
             raise ValidationError("Set the patient's Bed")
+        if self.bed_number.status == "Occupied":
+            raise ValidationError("Bed is occupied by a patient")
+
+
         if self.admission_status == "Discharge":
-            #self.for_patient.
+            self.for_patient.admitted = False
+            self.for_patient.save()
             self.bed_number.status = "Free"
             self.bed_number.save()
             self.bed_number = None
-
-        else:
+        elif self.admission_status == "Active" :
+            self.for_patient.admitted = True
             print(self.bed_number.status)
             self.bed_number.status  = "Occupied"
             self.bed_number.save()
@@ -85,7 +92,7 @@ class Admission(models.Model):
 
 
     def __str__(self):
-        return f"{self.date_of_admission}"
+        return f"{self.date_of_admission}" + " "+ str(self.for_patient)
 
 
 class Entry(models.Model):
@@ -135,3 +142,13 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     phone_number = models.CharField(blank=True, max_length=20)
     message = models.CharField(max_length=160)
+
+    def __str__(self):
+        return str(self.patient) + str(self.date)
+
+    def clean(self):
+        if self.time > datetime.time(14):
+            raise ValidationError("Make appointment with a doctor in the morning only")
+        if self.doctor.available_time != "Morning":
+            raise ValidationError("Select A Doctor in the morning duty !")
+
