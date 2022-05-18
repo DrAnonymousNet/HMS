@@ -28,9 +28,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Patient',
-    'Staff',
-    'Department',
+    'Patient','Staff',
+    'Department','account',
+    'crispy_forms',
 
 
 ]

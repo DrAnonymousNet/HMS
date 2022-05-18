@@ -86,11 +86,6 @@ class Admission(models.Model):
             self.bed_number.status  = "Occupied"
             self.bed_number.save()
 
-
-
-
-
-
     def __str__(self):
         return f"{self.date_of_admission}" + " "+ str(self.for_patient)
 
@@ -104,6 +99,9 @@ class Entry(models.Model):
     class Meta:
         verbose_name_plural = "Entries"
 
+    def __str__(self):
+        return self.content
+
 class LabTest(models.Model):
     urgency_choice = [
         ("Very very Urgent", "Class A"),
@@ -111,12 +109,15 @@ class LabTest(models.Model):
         ("Not Urgent", "Class C")
     ]
     name = models.CharField(max_length=20)
-    description = models.CharField(max_length=160)
+    description = models.TextField(max_length=160)
     prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
     date = models.DateTimeField(auto_now_add=True)
     urgency = models.CharField(choices=urgency_choice, max_length=30)
+
+    def __str__(self):
+        return f"{self.name} {self.patient} {self.date.date()}"
 
 
 class TestResult(models.Model):
@@ -125,13 +126,19 @@ class TestResult(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     lab_attendant = models.ForeignKey(LabAttendance, models.DO_NOTHING)
 
+    def __str__(self):
+        return f"{self.for_which_test} Result"
+
 
 class DrugPrescription(models.Model):
     name = models.CharField(max_length=20)
-    dosage_description = models.CharField(max_length=50)
+    dosage_description = models.TextField(max_length=50)
     patient = models.ForeignKey(Patient, on_delete=models.Model)
     prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.DO_NOTHING)
     date = models.DateField()
+
+    def __str__(self):
+        return self.name
 
 
 class Appointment(models.Model):
@@ -149,6 +156,6 @@ class Appointment(models.Model):
     def clean(self):
         if self.time > datetime.time(14):
             raise ValidationError("Make appointment with a doctor in the morning only")
-        if self.doctor.available_time != "Morning":
+        if self.doctor.duty_shift != "Morning":
             raise ValidationError("Select A Doctor in the morning duty !")
 

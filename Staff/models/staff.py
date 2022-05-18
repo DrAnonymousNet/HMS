@@ -2,8 +2,9 @@ import datetime
 
 from django.db import models
 from datetime import time, timedelta
-from Department.models.department import Department
+
 from django.contrib.auth.models import User
+from Department.models.department import *
 
 shift_choice = [
     ("Morning", "Morning"),
@@ -16,9 +17,8 @@ class Staff(models.Model):
     profile = models.OneToOneField(User, on_delete=models.CASCADE)
     about = models.CharField(max_length=50, blank=True)
     phone_number = models.CharField(max_length=15)
-    department = models.ForeignKey("Department", on_delete=models.DO_NOTHING),
     duty_shift = models.CharField(choices=shift_choice, max_length=20)
-
+    department = models.ForeignKey(Department, on_delete=models.CASCADE , default=1)
     class Meta:
         abstract = True
 
@@ -34,13 +34,15 @@ class Doctor(Staff):
         elif self.duty_shift == "Afternoon":
             self.available_time = datetime.time(20)
     def __str__(self):
-        return self.profile.first_name
+        return "Dr" + str(self.profile.first_name)
 class Nurse(Staff):
     pass
 
 
 class LabAttendance(Staff):
-    pass
+
+    def __str__(self):
+        return self.profile.first_name
 
 
 class Qualification(models.Model):
@@ -50,4 +52,4 @@ class Qualification(models.Model):
     start_year = models.DateField()
     end_year = models.DateField()
     def __str__(self):
-        return self.qualification
+        return f"{self.qualification}  {self.for_who}"
