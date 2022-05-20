@@ -36,33 +36,29 @@
 
       <div class="col-lg-8">
            <div class="appoinment-wrap mt-5 mt-lg-0 pl-lg-5">
-            <h2 class="mb-2 title-color">Book an appoinment</h2>
+            <h2 class="mb-2 title-color">Book an appointment</h2>
             <p class="mb-4">Mollitia dicta commodi est recusandae iste, natus eum asperiores corrupti qui velit . Iste dolorum atque similique praesentium soluta.</p>
-               <form id="#" class="appoinment-form" method="post" action="#">
+               <form id="#" class="appoinment-form" method="post" action="{% url 'appointment' %}">
+                   {% csrf_token%}
                     <div class="row">
                          <div class="col-lg-6">
                             <div class="form-group">
-                                <select class="form-control" id="departmentlist">
+                                <select name = "Department" class="form-control" id="departmentlist">
                                   <option>Choose Department</option>
                                     {% for department in departments%}
-                                  <option>{{department}}</option>
+                                  <option value="{{department}}" >{{department}}</option>
                                     {% endfor %}
 
                                 </select>
+
                             </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <select class="form-control" id="doctors">
-                                  <option id="doctor_opt" "">Select Doctors</option>
-                                  <option>Software Design</option>
-                                  <option>Development cycle</option>
-                                  <option>Software Development</option>
-                                  <option>Maintenance</option>
-                                  <option>Process Query</option>
-                                  <option>Cost and Duration</option>
-                                  <option>Modal Delivery</option>
+                                <select name = "doctor" class="form-control" id="doctors">
+                                  <option id="doctor_opt">Select Doctors</option>
                                 </select>
+
                             </div>
                         </div>
 
@@ -74,7 +70,8 @@
 
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <input name="time" id="time" type="text" class="form-control" placeholder="Time">
+                                <input name="time" id="time" type="text" class="form-control"
+                                       placeholder="Time HH:MM (24 Hours Format)">
                             </div>
                         </div>
                          <div class="col-lg-6">
@@ -93,7 +90,9 @@
                         <textarea name="message" id="message" class="form-control" rows="6" placeholder="Your Message"></textarea>
                     </div>
 
-                    <a class="btn btn-main btn-round-full" href="confirmation.html">Make Appoinment<i class="icofont-simple-right ml-2"></i></a>
+                    <button type="submit"
+                       class="btn btn-main btn-round-full"  href="#">Make Appoinment<i
+                       class="icofont-simple-right ml-2"></i></button>
                 </form>
             </div>
         </div>
@@ -102,8 +101,60 @@
   </div>
 </section>
 
-<script src="{% static 'js/appointment.js'%}">
-    console.log("Hello")
+<script >
+    function start(){
+        document.getElementById("departmentlist").addEventListener("change", getDoctor, false)
+
+    }
+
+
+        function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === (name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function getDoctor(){
+
+        let depts = document.getElementById("departmentlist")
+
+        let text = depts.options[depts.selectedIndex].value
+         console.log(text)
+        let xhr = new XMLHttpRequest
+        xhr.open("POST", "{% url 'appointment'%}", true)
+            xhr.setRequestHeader("Content-type","application/x-www-form-urlencode")
+            xhr.setRequestHeader("X-Requested-With","XMLHttpRequest")
+            xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"))
+
+        let data = JSON.stringify({payload:{"dept":text}})
+        xhr.onload = function() {
+            let docData = JSON.parse(xhr.responseText)
+
+            let area = document.getElementById("doctors")
+            let output = "<option id='doctor_opt'>Select Doctors</option>"
+            for(let i = 0; i < docData.len; i++) {
+                output += `<option id="doctor_opt"> Dr ${docData[i]}</option>`
+
+            }
+            area.innerHTML = output
+
+            console.log(output)
+        }
+
+        xhr.send(data)
+        }
+    window.addEventListener("load", start, false)
+
 </script>
 
 {% endblock content%}

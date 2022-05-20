@@ -1,6 +1,7 @@
 from django import forms
 from .models.patient import LabTest,Appointment, Entry,\
     Patient,DrugPrescription,Admission,TestResult
+from Department.models import Department
 
 
 class TestResultForm(forms.ModelForm):
@@ -39,3 +40,16 @@ class AdmissionForm(forms.ModelForm):
     class Meta:
         model = Admission
         fields = "__all__"
+
+class AppointmentForm2(forms.Form):
+    department = forms.ModelChoiceField(Department.objects.all())
+    doctor = forms.ChoiceField( required=True)
+    date = forms.DateField
+    time = forms.TimeField()
+    phone = forms.IntegerField()
+    message = forms.Textarea()
+
+
+
+
+

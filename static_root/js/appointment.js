@@ -1,15 +1,10 @@
-let dept = document.getElementById("departmentlist")
-console.log(dept)
-let text = dept.options[dept.selectedIndex].text
-console.log(text)
-e = dept.addEventListener("change", getDoctor(text))
 
-function get_doctors(text){
+function getDoctor(text){
          console.log(text)
         let xhr = new XMLHttpRequest
         xhr.open("GET", "{% url 'appointment'%}", true)
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
-        xhr.setRequestHeader("Context"
+
         let data = JSON.stringify({dept:text})
 
         xhr.onload = function(){
@@ -21,3 +16,10 @@ function get_doctors(text){
              }
         xhr.send(data)
         }
+
+let dept = document.getElementById("departmentlist")
+console.log(dept)
+let text = dept.options[dept.selectedIndex].text
+
+e = dept.addEventListener("change", getDoctor)
+console.log(e)

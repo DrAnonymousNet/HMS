@@ -11,13 +11,13 @@ import gettext as _
 
 class Patient(models.Model):
     profile = models.OneToOneField(User, on_delete=models.CASCADE)
-    DOB = models.DateField()
-    phone_number = models.CharField(max_length=15)
-    department = models.ManyToManyField(Department)
-    home_address = models.CharField(max_length=50)
-    next_of_kin_name = models.CharField(max_length=20)
-    next_of_kin_contact = models.CharField(max_length=20)
-    admitted = models.BooleanField()
+    DOB = models.DateField(blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
+    department = models.ManyToManyField(Department,blank=True)
+    home_address = models.CharField(max_length=50, blank=True)
+    next_of_kin_name = models.CharField(max_length=20, blank=True)
+    next_of_kin_contact = models.CharField(max_length=20, blank=True)
+    admitted = models.BooleanField(default=False)
 
     #def clean(self):
         #if self.admitted:
@@ -148,7 +148,8 @@ class Appointment(models.Model):
     time = models.TimeField()
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     phone_number = models.CharField(blank=True, max_length=20)
-    message = models.CharField(max_length=160)
+    message = models.CharField(max_length=160),
+
 
     def __str__(self):
         return str(self.patient) + str(self.date)

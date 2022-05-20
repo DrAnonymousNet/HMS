@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include 'head-p.html'%}
+</head>
+<body>
+{% include 'header-p.html'%}
+{% include 'sidebar-p.html'%}
+
+{% block content%}
+{% endblock content%}
+
+{% include 'footer-p.html' %}
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+{%include 'script-p.html'%}
+</body>
+</html>
