@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect,reverse
 from Department.models import Department
 from django.http import JsonResponse
 from Staff.models import Doctor
-from Patient.forms import AppointmentForm2
+from Patient.forms import *
 from Patient.models import *
 from django.core.serializers import serialize
 from .models import *
@@ -58,7 +58,84 @@ def confirmation_view(request):
 
 def patient_page(request, id):
     patient = Patient.objects.get(id=id)
+    appointments = patient.get_appointment_history()
+    drug_prescription_list = DrugPrescription.objects.filter(patient_id=patient.id)
+    lab_test_list = LabTest.objects.filter(patient_id=patient.id)
     context = {
-        "patient":patient
+        "patient": patient,
+        "appointments": appointments,
+        "labtests": lab_test_list,
+        "drugprescriptions": drug_prescription_list
     }
     return render(request, "patient-page.html", context)
+
+def DrugPrescriptionFormView(request, id):
+    patient = Patient.objects.get(id=id)
+    form = DrugPrescriptionForm()
+    if request.method == "POST":
+        form = DrugPrescriptionForm(request.POST)
+        if form.is_valid():
+            form.instance.prescribing_doctor = Doctor.objects.get(profile=request.user)
+            form.instance.patient = patient
+            form.instance.save()
+            return redirect(reverse("patient-page", kwargs = {"id":id}))
+    context = {
+        "form":form,
+        "patient":patient
+    }
+    return render(request,"drug_prescription_form.html", context )
+
+def LabTestFormView(request, id):
+    patient = Patient.objects.get(id=id)
+    form = LabTestForm()
+    if request.method == "POST":
+        form = LabTestForm(request.POST)
+        if form.is_valid():
+            form.instance.prescribing_doctor = Doctor.objects.get(profile=request.user)
+            form.instance.patient = patient
+            form.instance.save()
+            return redirect(reverse("patient-page", kwargs = {"id":id}))
+    context = {
+        "form":form,
+        "patient":patient
+    }
+    return render(request,"lab_test_form.html", context )
+
+def EntryFormView(request, id):
+    form = EntryForm()
+    patient = Patient.objects.get(id=id)
+
+    context = {
+        "form":form,
+        "patient":patient
+
+    }
+    return render(request, "entryform.html", context)
+
+def AppointmentFormView(request,id):
+    form = AppointmentForm()
+    patient = Patient.objects.get(id = id)
+    if request.method == "POST":
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            form.instance.save()
+            return redirect(patient.get_absolute_url())
+
+    context = {
+        "form":form,
+        "patient":patient,
+    }
+    return render(request, "appointment-form.html", context)
+
+def PatientPrescriptioListView(request, id):
+    patient = Patient.objects.get(id=id)
+    appointments = patient.get_appointments_history()
+    drug_prescription_list = DrugPrescription.objects.filter(patient_id = patient.id)
+    lab_test_list = LabTest.objects.filter(patient_id = patient.id)
+    context = {
+        "patient":patient,
+        "appointments":appointments,
+        "labtests":lab_test_list,
+        "drugprescriptions":drug_prescription_list
+    }
+    return render(request, "all_prescription_list.html", context)

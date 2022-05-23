@@ -1,7 +1,13 @@
 from django import forms
 from .models.patient import LabTest,Appointment, Entry,\
-    Patient,DrugPrescription,Admission,TestResult
+    Patient,DrugPrescription,Admission,TestResult, LabTestObject
 from Department.models import Department
+from tinymce import TinyMCE
+
+
+class TinyMCEWidget(TinyMCE):
+    def use_required_attribute(self, *args):
+        return False
 
 
 class TestResultForm(forms.ModelForm):
@@ -12,7 +18,7 @@ class TestResultForm(forms.ModelForm):
 class DrugPrescriptionForm(forms.ModelForm):
     class Meta:
         model = DrugPrescription
-        exclude = ["patient", "doctor"]
+        exclude = ["patient", "prescribing_doctor"]
 
 class AppointmentForm(forms.ModelForm):
     class Meta:
@@ -28,12 +34,20 @@ class TestResultForm(forms.ModelForm):
 class LabTestForm(forms.ModelForm):
     class Meta:
         model = LabTest
+        exclude= ["patient", "prescribing_doctor"]
+
+class LabTestObjectForm(forms.ModelForm):
+    class Meta:
+        model = LabTestObject
         fields = "__all__"
 
 class EntryForm(forms.ModelForm):
+    content = forms.CharField(widget=TinyMCEWidget(attrs={
+        'required': True, 'cols': 30, 'rows': 10}
+    ))
     class Meta:
         model = Entry
-        fields = ["doctor", "date", "content"]
+        fields = ["doctor", "date","department", "content"]
 
 
 class AdmissionForm(forms.ModelForm):

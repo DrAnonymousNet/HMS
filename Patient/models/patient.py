@@ -7,6 +7,8 @@ from Department.models.department import *
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import gettext as _
+from tinymce import HTMLField
+from django.shortcuts import reverse
 
 
 class Patient(models.Model):
@@ -25,6 +27,8 @@ class Patient(models.Model):
 
     def __str__(self):
         return self.get_full_name()
+    def get_absolute_url(self):
+        return reverse("patient-page", kwargs = {"id":self.id})
 
     def get_admission_history(self):
         return self.admission_set.all()
@@ -37,9 +41,9 @@ class Patient(models.Model):
 
     def get_present_admission(self):
         return self.admission_set.get(admission_status="Active")
+    def get_appointment_history(self):
+        return self.appointment_set.all()
 
-    def get_admission_history(self):
-        return self.admission_set.all()
 
 
 class Admission(models.Model):
@@ -92,9 +96,11 @@ class Admission(models.Model):
 
 class Entry(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.DO_NOTHING)
-    content = models.TextField()
+    content = HTMLField()
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     date = models.DateField()
+    department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
+    appointment = models.ForeignKey("Appointment", on_delete=models.CASCADE)
 
     class Meta:
         verbose_name_plural = "Entries"
@@ -102,22 +108,34 @@ class Entry(models.Model):
     def __str__(self):
         return self.content
 
+class LabTestObject(models.Model):
+    test_name = models.CharField(max_length=20)
+    description = models.TextField(max_length=160)
+    department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
+    price = models.FloatField()
+
+    def __str__(self):
+        return f"{self.test_name}"
+
+
 class LabTest(models.Model):
+
     urgency_choice = [
         ("Very very Urgent", "Class A"),
         ("Very Urgent", "Class B"),
         ("Not Urgent", "Class C")
     ]
-    name = models.CharField(max_length=20)
-    description = models.TextField(max_length=160)
-    prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+
+    test = models.ForeignKey(LabTestObject, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
     date = models.DateTimeField(auto_now_add=True)
+    prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     urgency = models.CharField(choices=urgency_choice, max_length=30)
+    appointment= models.ForeignKey("Appointment", on_delete=models.CASCADE)
+    payment_status = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.name} {self.patient} {self.date.date()}"
+        return f"{self.patient} {self.test} {self.date.date()}"
 
 
 class TestResult(models.Model):
@@ -131,11 +149,12 @@ class TestResult(models.Model):
 
 
 class DrugPrescription(models.Model):
-    name = models.CharField(max_length=20)
+    drug_name = models.CharField(max_length=20)
     dosage_description = models.TextField(max_length=50)
     patient = models.ForeignKey(Patient, on_delete=models.Model)
     prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.DO_NOTHING)
-    date = models.DateField()
+    date = models.DateField(auto_now_add=True)
+    appointment = models.ForeignKey("Appointment", models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -148,7 +167,7 @@ class Appointment(models.Model):
     time = models.TimeField()
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     phone_number = models.CharField(blank=True, max_length=20)
-    message = models.CharField(max_length=160),
+    message = models.TextField(max_length=160 , blank=True)
 
 
     def __str__(self):

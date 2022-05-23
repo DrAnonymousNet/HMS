@@ -94,23 +94,23 @@
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="forms-elements.html">
-              <i class="bi bi-circle"></i><span>Form Elements</span>
+            <a href="{% url 'appointment' patient.id%}">
+              <i class="bi bi-circle"></i><span>Appointment</span>
             </a>
           </li>
           <li>
-            <a href="forms-layouts.html">
-              <i class="bi bi-circle"></i><span>Form Layouts</span>
+            <a href="{% url 'prescription' patient.id %}">
+              <i class="bi bi-circle"></i><span>Drug Prescription</span>
             </a>
           </li>
           <li>
-            <a href="forms-editors.html">
-              <i class="bi bi-circle"></i><span>Form Editors</span>
+            <a href="{% url 'entry' patient.id %}">
+              <i class="bi bi-circle"></i><span>Medical Entry</span>
             </a>
           </li>
           <li>
-            <a href="forms-validation.html">
-              <i class="bi bi-circle"></i><span>Form Validation</span>
+            <a href="{% url 'labtest' patient.id%}">
+              <i class="bi bi-circle"></i><span>Lab Test</span>
             </a>
           </li>
         </ul>
