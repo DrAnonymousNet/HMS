@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import gettext as _
 from tinymce import HTMLField
+from django.db.models import Q
 from django.shortcuts import reverse
 
 
@@ -51,54 +52,39 @@ class Admission(models.Model):
         ("Active", "Active"),
         ("Discharge", "Discharged")
     ]
-    for_patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    bed_number = models.OneToOneField(Bed, on_delete=models.CASCADE, blank=True, null=True)
+    bed_number = models.OneToOneField(Bed, on_delete=models.CASCADE, blank=True, null=True,
+                                      limit_choices_to=Q(status=1))
     reason = models.TextField(max_length=160, blank=True)
     discharge_summary = models.TextField(max_length=160, blank=True)
-    date_of_admission = models.DateField()
+    date_of_admission = models.DateField(auto_now_add=True)
     date_of_discharged = models.DateField(blank=True, null=True)
     admission_status = models.CharField(choices=status, max_length=10)
 
     class Meta:
-        unique_together = ["for_patient", "date_of_admission"]
+        unique_together = ["patient", "date_of_admission"]
 
     def clean(self):
-        if self.for_patient.admitted and not self.date_of_discharged:
-            raise ValidationError("This Patient is Admitted Already")
-        if self.admission_status == "Discharge" and not self.date_of_discharged:
-            raise ValidationError("A discharged admission  profile status must have a discharge date")
-
-        if self.admission_status == "Active" and self.date_of_discharged:
-            raise ValidationError("An active admission status cannot have a discharge date")
-        elif self.admission_status == "Active" and not self.bed_number:
-            raise ValidationError("Set the patient's Bed")
-        if self.bed_number.status == "Occupied":
-            raise ValidationError("Bed is occupied by a patient")
-
-
-        if self.admission_status == "Discharge":
-            self.for_patient.admitted = False
-            self.for_patient.save()
-            self.bed_number.status = "Free"
-            self.bed_number.save()
+        if self.admission_status == 'Admitted':
+            self.bed_number.status = 'Occupied'
+            self.patient.admitted = True
+        if self.admission_status == 'Discharged':
+            self.bed_number.status = 'Free'
             self.bed_number = None
-        elif self.admission_status == "Active" :
-            self.for_patient.admitted = True
-            print(self.bed_number.status)
-            self.bed_number.status  = "Occupied"
-            self.bed_number.save()
+            self.date_of_discharged = datetime.datetime.now()
+            self.patient.admitted = False
 
     def __str__(self):
-        return f"{self.date_of_admission}" + " "+ str(self.for_patient)
+        return f"{self.date_of_admission}" + " "+ str(self.patient)
 
 
 class Entry(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.DO_NOTHING)
-    content = HTMLField()
+    content = models.TextField()
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(auto_now_add=True)
     department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
     appointment = models.ForeignKey("Appointment", on_delete=models.CASCADE)
 
@@ -157,7 +143,7 @@ class DrugPrescription(models.Model):
     appointment = models.ForeignKey("Appointment", models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return self.drug_name
 
 
 class Appointment(models.Model):

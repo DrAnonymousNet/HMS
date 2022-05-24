@@ -104,6 +104,12 @@ def LabTestFormView(request, id):
 def EntryFormView(request, id):
     form = EntryForm()
     patient = Patient.objects.get(id=id)
+    if request.method == 'POST':
+        form =EntryForm(request.POST)
+        if form.is_valid():
+            form.instance.patient = patient
+            form.instance.save()
+            return redirect(patient.get_absolute_url())
 
     context = {
         "form":form,
@@ -139,3 +145,53 @@ def PatientPrescriptioListView(request, id):
         "drugprescriptions":drug_prescription_list
     }
     return render(request, "all_prescription_list.html", context)
+
+
+def AdmissionFormView(request,id):
+    form = AdmissionForm()
+    patient = Patient.objects.get(id = id)
+    if request.method == "POST":
+        form = AdmissionForm(request.POST)
+        if form.is_valid():
+            form.instance.patient = patient
+            form.instance.save()
+            return redirect(patient.get_absolute_url())
+
+    context = {
+        "form":form,
+        "patient":patient,
+    }
+    return render(request, "admission-form.html", context)
+
+def appointmentListView(request, id):
+    patient = Patient.objects.get(id=id)
+    appointments = patient.get_appointment_history()
+    context = {
+        'patient':patient,
+        'appointments':appointments
+    }
+    return render(request, 'appointmentlist.html', context)
+
+def EntryListView(request, id, slug):
+    patient = Patient.objects.get(id=id)
+    entry = Entry.objects.filter(patient=patient, department__slug=slug)
+    context = {
+        'patient':patient,
+        'entry':entry,
+    }
+    return render(request, 'entrylist.html', context)
+
+
+def PatientLabTestListView(request, id):
+    patient =Patient.objects.get(id = id)
+    labtest = LabTest.objects.filter(testresult__isnull = False)
+
+def AppointmentDetailView(request, id):
+    appointment = Appointment.objects.get(id=id)
+    drug_prescription = DrugPrescription.objects.filter(appointment=appointment)
+    labest = LabTest.objects.filter(appointment=appointment)
+    entry = Entry.objects.filter(appointment=appointment)
+    context ={
+        'appointment':appointment
+    }
+    return render(request, 'appointment-detail.html', context)

@@ -28,6 +28,7 @@ urlpatterns = [
     path("patient/<int:id>/lab-test-form", LabTestFormView, name="labtest"),
     path("patient/<int:id>/entry-form", EntryFormView, name="entry"),
     path("patient/<int:id>/appointment", AppointmentFormView, name="appointment"),
+    path('patient/<int:id>/admission', AdmissionFormView, name='admission'),
     path('tinymce/', include('tinymce.urls'))
 
 ]

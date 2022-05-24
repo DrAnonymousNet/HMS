@@ -98,11 +98,17 @@
               <i class="bi bi-circle"></i><span>Appointment</span>
             </a>
           </li>
+           <li>
+            <a href="{% url 'admission' patient.id %}">
+              <i class="bi bi-circle"></i><span>Admission</span>
+            </a>
+          </li>
           <li>
             <a href="{% url 'prescription' patient.id %}">
               <i class="bi bi-circle"></i><span>Drug Prescription</span>
             </a>
           </li>
+
           <li>
             <a href="{% url 'entry' patient.id %}">
               <i class="bi bi-circle"></i><span>Medical Entry</span>

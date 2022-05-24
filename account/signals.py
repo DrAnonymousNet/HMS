@@ -9,9 +9,9 @@ def send_welcome_email(sender, **kwargs):
         subject = "Welcome Message"
         message = f"Hello {kwargs['instance'].username} !" \
                   f"You are welcome to our great website"
-        recipient = [kwargs["instance"].email]
+        recipient_list = [kwargs["instance"].email]
         send_mail(subject=subject,
                   message=message,
-                  recipient_list=recipient, fail_silently=True)
+                  recipient_list=recipient_list, fail_silently=True)
         print("Message Sent")
 

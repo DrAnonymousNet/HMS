@@ -26,10 +26,6 @@ class AppointmentForm(forms.ModelForm):
         fields = "__all__"
 
 
-class TestResultForm(forms.ModelForm):
-    class Meta:
-        model = TestResult
-        fields = "__all__"
 
 class LabTestForm(forms.ModelForm):
     class Meta:
@@ -42,18 +38,16 @@ class LabTestObjectForm(forms.ModelForm):
         fields = "__all__"
 
 class EntryForm(forms.ModelForm):
-    content = forms.CharField(widget=TinyMCEWidget(attrs={
-        'required': True, 'cols': 30, 'rows': 10}
-    ))
+
     class Meta:
         model = Entry
-        fields = ["doctor", "date","department", "content"]
+        fields = ["doctor","department", "content", 'appointment']
 
 
 class AdmissionForm(forms.ModelForm):
     class Meta:
         model = Admission
-        fields = "__all__"
+        exclude= ['patient', 'date_of_admission','date_of_discharged']
 
 class AppointmentForm2(forms.Form):
     department = forms.ModelChoiceField(Department.objects.all())
