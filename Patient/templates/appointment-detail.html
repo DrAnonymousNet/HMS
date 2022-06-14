@@ -1,0 +1,91 @@
+{% extends 'base-p.html'%}
+{% load static %}
+
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Appointment {{appointment.date}}</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'index'%}">Home</a></li>
+          <li class="breadcrumb-item">Appointment</li>
+          <li class="breadcrumb-item active">{{ appointment.date }}</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-6">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Drug Prescription</h5>
+
+              <!-- Default List group -->
+              <ul class="list-group">
+                {% for drug in drugprescriptions%}
+                <li class="list-group-item">{{drug}}</li>
+               {%endfor%}
+              </ul><!-- End Default List group -->
+
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Lab Test</h5>
+
+              <!-- List group with Links and buttons -->
+              <div class="list-group">
+                {% for test in labtests %}
+                <button type="button" class="list-group-item list-group-item-action" aria-current="true">{{test }}</button>
+                {% endfor %}
+
+              </div><!-- End List group with Links and buttons -->
+
+            </div>
+          </div>
+
+
+
+          </div>
+
+
+        </div>
+
+        <div class="col-lg-6">
+
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Entry Content</h5>
+
+              <!-- List group with Advanced Contents -->
+              <div class="list-group">
+                {% for entry in entries %}
+                <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{appointment.date}}</h5>
+                    <small></small>
+                  </div>
+                  <p class="mb-1">{{entry.content}}</p>
+
+                </a>
+
+                {% endfor %}
+              </div><!-- End List group Advanced Content -->
+
+            </div>
+          </div>
+
+
+
+      </div>
+    </section>
+
+  </main><!-- End #main -->
+
+{% endblock content%}

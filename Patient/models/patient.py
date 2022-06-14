@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import gettext as _
 from tinymce import HTMLField
+from django.utils.text import slugify
 from django.db.models import Q
 from django.shortcuts import reverse
 
@@ -21,6 +22,7 @@ class Patient(models.Model):
     next_of_kin_name = models.CharField(max_length=20, blank=True)
     next_of_kin_contact = models.CharField(max_length=20, blank=True)
     admitted = models.BooleanField(default=False)
+    occupation = models.CharField(max_length=20, default="Teacher")
 
     #def clean(self):
         #if self.admitted:
@@ -86,7 +88,8 @@ class Entry(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
-    appointment = models.ForeignKey("Appointment", on_delete=models.CASCADE)
+    appointment = models.ForeignKey("Appointment", on_delete=models.CASCADE, limit_choices_to=Q(date__lte =
+                                                                                                datetime.datetime.now()))
 
     class Meta:
         verbose_name_plural = "Entries"
@@ -117,7 +120,8 @@ class LabTest(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     urgency = models.CharField(choices=urgency_choice, max_length=30)
-    appointment= models.ForeignKey("Appointment", on_delete=models.CASCADE)
+    appointment= models.ForeignKey("Appointment", on_delete=models.CASCADE, limit_choices_to=Q(date__lte =
+                                                                                               datetime.datetime.now()))
     payment_status = models.BooleanField(default=False)
 
     def __str__(self):
@@ -140,13 +144,15 @@ class DrugPrescription(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.Model)
     prescribing_doctor = models.ForeignKey(Doctor, on_delete=models.DO_NOTHING)
     date = models.DateField(auto_now_add=True)
-    appointment = models.ForeignKey("Appointment", models.CASCADE)
+    appointment = models.ForeignKey("Appointment", on_delete=models.CASCADE, limit_choices_to=Q(date__lte =
+                                                                                                datetime.datetime.now()))
 
     def __str__(self):
         return self.drug_name
 
 
 class Appointment(models.Model):
+
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     date = models.DateField()
@@ -154,14 +160,15 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     phone_number = models.CharField(blank=True, max_length=20)
     message = models.TextField(max_length=160 , blank=True)
+    payment_status = models.BooleanField(default=False)
+    slug= models.SlugField( default='12-12-11')
 
 
     def __str__(self):
         return str(self.patient) + str(self.date)
 
-    def clean(self):
-        if self.time > datetime.time(14):
-            raise ValidationError("Make appointment with a doctor in the morning only")
-        if self.doctor.duty_shift != "Morning":
-            raise ValidationError("Select A Doctor in the morning duty !")
-
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.date)
+        super(Appointment, self).save(*args, **kwargs)
+    def get_absolute_url(self):
+        return reverse("appointment-detail", kwargs={"slug":self.slug, "id":self.patient.id})

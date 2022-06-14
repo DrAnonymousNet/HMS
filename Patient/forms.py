@@ -23,7 +23,7 @@ class DrugPrescriptionForm(forms.ModelForm):
 class AppointmentForm(forms.ModelForm):
     class Meta:
         model = Appointment
-        fields = "__all__"
+        exclude = ['doctor','slug', 'payment_status', 'patient', 'phone_number']
 
 
 

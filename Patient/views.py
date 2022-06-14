@@ -121,9 +121,13 @@ def EntryFormView(request, id):
 def AppointmentFormView(request,id):
     form = AppointmentForm()
     patient = Patient.objects.get(id = id)
+    doctor = Doctor.objects.get(profile_id = request.user)
     if request.method == "POST":
         form = AppointmentForm(request.POST)
         if form.is_valid():
+            form.instance.doctor = doctor
+            form.instance.patient = patient
+            form.instance.phone_number = patient.phone_number
             form.instance.save()
             return redirect(patient.get_absolute_url())
 
@@ -163,7 +167,7 @@ def AdmissionFormView(request,id):
     }
     return render(request, "admission-form.html", context)
 
-def appointmentListView(request, id):
+def AppointmentListView(request, id):
     patient = Patient.objects.get(id=id)
     appointments = patient.get_appointment_history()
     context = {
@@ -186,12 +190,24 @@ def PatientLabTestListView(request, id):
     patient =Patient.objects.get(id = id)
     labtest = LabTest.objects.filter(testresult__isnull = False)
 
-def AppointmentDetailView(request, id):
-    appointment = Appointment.objects.get(id=id)
+def AppointmentDetailView(request, id, slug):
+    appointment = Appointment.objects.get(slug=slug)
+    patient =  Patient.objects.get(id = id)
     drug_prescription = DrugPrescription.objects.filter(appointment=appointment)
-    labest = LabTest.objects.filter(appointment=appointment)
+    labtest = LabTest.objects.filter(appointment=appointment)
     entry = Entry.objects.filter(appointment=appointment)
     context ={
-        'appointment':appointment
+        'appointment':appointment,
+        "drugprescriptions":drug_prescription,
+        "labtests":labtest,
+        "entries":entry,
+        "patient":patient
     }
     return render(request, 'appointment-detail.html', context)
+
+def patientProfile(request, id):
+    patient = Patient.objects.get(id=id)
+    context = {
+        "patient":patient
+    }
+    return render(request, "patient-profile.html", context)
